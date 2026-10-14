@@ -1,0 +1,128 @@
+
+# Pipeline de Dados com IoT e Docker
+
+Projeto acadêmico da disciplina Disruptive Architectures: IoT, Big Data e IA. O objetivo é processar leituras de temperatura de dispositivos IoT, armazená-las no PostgreSQL e disponibilizar análises por meio de um dashboard interativo.
+
+## Tecnologias utilizadas
+
+- Python: processamento dos dados.
+- Pandas: leitura e manipulação do CSV.
+- SQLAlchemy e psycopg2-binary: conexão com o PostgreSQL.
+- PostgreSQL: armazenamento e consulta dos dados.
+- Docker: execução do banco de dados em contêiner.
+- Streamlit: interface do dashboard.
+- Plotly: criação dos gráficos interativos.
+- Git e GitHub: versionamento e publicação do projeto.
+
+## Estrutura do projeto
+
+```text
+pipeline-iot/
+├── data/
+│   └── IOT-temp.csv
+├── docs/
+├── sql/
+│   └── views.sql
+├── src/
+│   ├── processar_dados.py
+│   └── dashboard.py
+├── requirements.txt
+└── README.md
+
+Conjunto de dados
+O projeto utiliza o conjunto de dados Temperature Readings: IoT Devices, disponibilizado no Kaggle:
+
+https://www.kaggle.com/datasets/atulanandjha/temperature-readings-iot-devices
+
+O arquivo utilizado localmente é data/IOT-temp.csv.
+Pré-requisitos
+- Python instalado.
+- Docker Desktop instalado e em execução.
+- Git instalado.
+- Arquivo CSV disponível na pasta data.
+Instalação das dependências
+Abra o terminal na pasta principal do projeto.
+Para instalar as dependências em um ambiente virtual existente:
+
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+
+Caso esteja configurando o projeto em outro computador, crie primeiro o ambiente virtual:
+python -m venv .venv
+
+
+Depois, instale as dependências:
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+
+Execução do PostgreSQL com Docker
+Abra o Docker Desktop e aguarde a inicialização.
+Verifique se o contêiner está ativo:
+docker ps --filter "name=postgres-iot"
+
+
+Se o contêiner existir, mas estiver parado, inicie-o:
+docker start postgres-iot
+
+
+Verifique se o PostgreSQL aceita conexões:
+docker exec postgres-iot pg_isready -U iot_user -d iot_database
+
+
+O resultado esperado indica que o servidor está aceitando conexões.
+Configuração de portas
+Neste projeto, o PostgreSQL utiliza a porta 5432 dentro do contêiner e a porta 5433 para conexões realizadas pelo Windows.
+
+- Dentro do contêiner: 5432
+- No computador Windows: 5433
+
+O banco utilizado é iot_database e o usuário é iot_user.
+As credenciais devem corresponder à configuração existente no ambiente.
+
+Processamento e armazenamento dos dados
+
+O script src/processar_dados.py realiza o processamento do arquivo CSV e a importação dos dados para o PostgreSQL.
+
+Views SQL
+As três views estão definidas em sql/views.sql.
+
+1. avg_temp_por_dispositivo
+
+Calcula a temperatura média registrada para cada dispositivo.
+Propósito: comparar as médias de temperatura entre dispositivos e identificar diferenças que possam merecer investigação.
+
+2. leituras_por_hora
+
+Conta quantas leituras foram registradas em cada hora do dia.
+Propósito: observar a distribuição horária dos registros e identificar períodos com maior concentração de leituras.
+
+3. temp_max_min_por_dia
+
+Calcula as temperaturas máxima e mínima para cada data.
+Propósito: acompanhar a variação diária das temperaturas e identificar extremos que possam justificar análises adicionais.
+As views consultam a tabela temperature_readings. Elas podem ser criadas ou atualizadas executando o arquivo SQL no banco de dados.
+Execução do dashboard
+Com o Docker ativo e o PostgreSQL aceitando conexões, execute:
+
+.\.venv\Scripts\python.exe -m streamlit run .\src\dashboard.py
+
+
+Abra no navegador o endereço informado pelo Streamlit, normalmente:
+http://localhost:8501
+
+O dashboard apresenta três visualizações interativas:
+
+1. Média de temperatura por dispositivo.
+2. Quantidade de leituras por hora do dia.
+3. Temperaturas máxima e mínima por dia.
+
+Resultados observados
+Na execução inicial do projeto:
+
+- O CSV original continha 97.606 linhas.
+
+- Foram armazenados 97.605 registros únicos.
+
+- A temperatura média observada para o dispositivo Room Admin foi de aproximadamente 35,05, conforme a unidade registrada no conjunto de dados.
+
+- A maior contagem horária observada foi de 7.248 leituras na hora 14.
